@@ -1,1 +1,55 @@
+from abc import ABC, abstractmethod  # Herramientas para crear clases abstractas
+from datetime import datetime  # Para saber la fecha y hora de los errores
 
+# ==========================================
+# 1. ERRORES CREADOS POR MI
+# ==========================================
+class ErrorBase(Exception):  # El error principal del que salen los demas
+    pass 
+
+class ErrorDatoMalo(ErrorBase):  # Para cuando escriben algo mal o lo dejan vacio
+    pass 
+
+class ErrorReserva(ErrorBase):  # Para cuando algo falla cobrando o cancelando
+    pass 
+
+# ==========================================
+# 2. ARCHIVO PARA GUARDAR ERRORES (LOGS)
+# ==========================================
+def guardar_error(mensaje):  # Funcion que guarda lo que pasa en un archivo
+    try:  # Intenta abrir el archivo para escribir
+        archivo = open("software_fj.log", "a", encoding="utf-8")  
+        fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Saca la fecha y hora
+        archivo.write(f"[{fecha}] {mensaje}\n")  # Guarda la fecha y el mensaje
+    except Exception:  # Si no puede abrir el archivo por algo
+        print("Aviso: No se pudo guardar el error.")
+    finally:  # Siempre se ejecuta al final para cerrar el archivo
+        try: archivo.close()  
+        except: pass  
+
+# ==========================================
+# 3. CLASES PADRE Y CLIENTE
+# ==========================================
+class Entidad(ABC):  # Clase abstracta principal
+    @abstractmethod  # Obliga a las hijas a tener esta funcion
+    def ver_datos(self):  
+        pass
+
+class Cliente(Entidad):  # Clase para crear clientes
+    def __init__(self, nombre, correo, telefono):  
+        # Valida que los datos no esten vacios y tengan sentido
+        if not nombre or "@" not in correo or not telefono.isdigit():
+            raise ErrorDatoMalo("Faltan datos, el correo no tiene @ o el telefono tiene letras.")
+        self.__nombre = nombre  # Variables privadas (encapsulamiento)
+        self.__correo = correo
+        self.__telefono = telefono
+        guardar_error(f"Cliente creado: {self.__nombre}")  # Guarda que se creo bien
+
+    def ver_datos(self):  # Muestra los datos del cliente
+        return f"Cliente: {self.__nombre} | Correo: {self.__correo} | Tel: {self.__telefono}"
+
+# --- Prueba rapida para ver que funciona esta parte ---
+if __name__ == "__main__":
+    print("Probando la parte 1...")
+    cliente1 = Cliente("Freddy", "freddy@correo.com", "3001234567")
+    print(cliente1.ver_datos())
