@@ -120,3 +120,45 @@ if __name__ == "__main__":
     print("Probando la parte 2...")
     s1 = Sala("Sala Grande", 40000, 10)
     print(s1.ver_datos())
+
+# tercer aporte para del codigo
+
+# 4. RESERVAS Y EXCEPCIONES
+# ==========================================
+class Reserva(Entidad):  # Maneja los cobros y estados
+    def __init__(self, numero, cliente, servicio, tiempo):
+        self.numero = numero  # Un numero normal para identificar la reserva
+        self.cliente = cliente  
+        self.servicio = servicio
+        self.tiempo = tiempo
+        self.estado = "Sin confirmar"  # Empieza sin confirmar
+        self.total = 0
+
+    def cobrar(self, descuento=0.0):  # Trata de calcular cuanto vale
+        try:  # Intenta hacer la multiplicacion en el servicio
+            self.total = self.servicio.calcular_total(self.tiempo, descuento)
+        except Exception as e:  # Si algo falla (ENCADENAMIENTO DE ERRORES)
+            guardar_error(f"Fallo el cobro en reserva {self.numero}: {e}")
+            raise ErrorReserva(f"No se pudo cobrar la reserva {self.numero}") from e 
+        else:  # Si todo salio perfecto sin errores (TRY/EXCEPT/ELSE)
+            self.estado = "Confirmada"
+            guardar_error(f"Reserva {self.numero} cobrada bien por ${self.total}")
+        finally:  # Siempre se ejecuta, haya error o no (TRY/EXCEPT/FINALLY)
+            guardar_error(f"Termino el intento de cobro de la reserva {self.numero}")
+
+    def cancelar(self):  # Cancela la reserva si no estaba cancelada ya
+        if self.estado == "Cancelada":
+            raise ErrorReserva(f"La reserva {self.numero} ya estaba cancelada de antes.")
+        self.estado = "Cancelada"
+        guardar_error(f"Reserva {self.numero} cancelada.")
+
+    def ver_datos(self):  # Muestra resumen de la reserva
+        return f"Reserva {self.numero} ({self.estado}) | Para: {self.cliente._Cliente__nombre} | Total: ${self.total}"
+
+# --- Prueba rapida para ver que funciona esta parte ---
+if __name__ == "__main__":
+    c = Cliente("Juan", "juan@correo.com", "3000000")
+    s = Equipo("PCs", 20000, 2)
+    r = Reserva(1, c, s, 3)
+    r.cobrar()
+    print(r.ver_datos())
