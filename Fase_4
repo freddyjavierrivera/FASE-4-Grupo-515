@@ -162,3 +162,67 @@ if __name__ == "__main__":
     r = Reserva(1, c, s, 3)
     r.cobrar()
     print(r.ver_datos())
+
+# 5. PRUEBA DE LAS 10 OPERACIONES REQUERIDAS
+# ==========================================
+def simulacion():
+    print("\n--- INICIANDO 10 PRUEBAS AUTOMATICAS ---")
+    
+    # 1. Cliente bueno
+    try: 
+        c1 = Cliente("Carlos Mario", "carlos@correo.com", "3001234567")
+        print("1. Cliente creado super bien")
+    except ErrorEmpresa as e: guardar_error(e)
+
+    # 2. Cliente malo a proposito
+    try: 
+        Cliente("Andrea", "correo_sin_arroba", "letras")  
+    except ErrorDatoMalo as e: 
+        print(f"2. Error atrapado bien (Cliente malo): {e}")
+        guardar_error(e)
+
+    # 3. Servicio bueno
+    s1 = Sala("Sala de Juntas", 40000, 15)
+    print("3. Sala creada super bien")
+
+    # 4. Servicio malo a proposito
+    try:
+        Equipo("Portatil malo", 0, 0)
+    except ErrorDatoMalo as e:
+        print(f"4. Error atrapado bien (Equipo malo): {e}")
+        guardar_error(e)
+
+    s2 = Asesoria("Ayuda con Python", 60000, "Profe Fabian")
+    print("5. Asesoria creada super bien")
+
+    # 6. Reserva buena
+    try: 
+        r1 = Reserva(100, c1, s1, 3)  
+        r1.cobrar(descuento=0.1)  # Con 10% de descuento
+        print(f"6. Reserva 100 cobrada bien con descuento. Pago: ${r1.total}")
+    except ErrorEmpresa as e: guardar_error(e)
+
+    # 7. Reserva mala a proposito (tiempo negativo)
+    try: 
+        r2 = Reserva(101, c1, s2, -5)  
+        r2.cobrar()
+    except ErrorReserva as e: 
+        print(f"7. Error encadenado atrapado bien: {e}")
+
+    # 8. Cancelar reserva bien
+    try: 
+        r1.cancelar()
+        print("8. Reserva 100 cancelada bien")
+    except ErrorEmpresa as e: guardar_error(e)
+
+    # 9. Tratar de cancelar una reserva ya cancelada
+    try: 
+        r1.cancelar()
+    except ErrorReserva as e: 
+        print(f"9. Error atrapado al re-cancelar: {e}")
+
+    print("10. Simulacion terminada, el programa aguanto todos los errores.")
+
+# --- Prueba rapida ---
+if __name__ == "__main__":
+    simulacion()
