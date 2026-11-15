@@ -226,3 +226,120 @@ def simulacion():
 # --- Prueba rapida ---
 if __name__ == "__main__":
     simulacion()
+
+# 6. MENU PRINCIPAL
+# ==========================================
+def menu():
+    # Listas donde vamos a guardar la informacion en memoria
+    clientes = []  
+    servicios = [] 
+    reservas = []  
+    num_reserva = 1  # Arranca en la reserva numero 1
+
+    while True:
+        print("\n" + "="*50)
+        print("    SISTEMA DE GESTION - SOFTWARE FJ (FASE 4)")
+        print("="*50)
+        print("1. Ejecutar las 10 operaciones de prueba (Anexo 3)")
+        print("2. Registrar un Cliente manualmente")
+        print("3. Registrar un Servicio manualmente")
+        print("4. Crear una Reserva manualmente")
+        print("5. Ver estado de Clientes, Servicios y Reservas")
+        print("6. Ver archivo de logs (software_fj.log)")
+        print("7. Salir")
+        
+        opcion = input("Opcion: ")
+
+        if opcion == "1":
+            simulacion()  # Llama a la funcion de la parte 4
+
+        elif opcion == "2":  # Crear cliente pidiendo datos
+            print("\n--- NUEVO CLIENTE ---")
+            nom = input("Nombre: ")
+            cor = input("Correo: ")
+            tel = input("Telefono: ")
+            try:
+                clientes.append(Cliente(nom, cor, tel))
+                print("Cliente guardado en el sistema.")
+            except Exception as e: 
+                print(f"Fallo: {e}")
+                guardar_error(f"Fallo crear cliente a mano: {e}")
+
+        elif opcion == "3":  # Crear servicio pidiendo datos
+            print("\n--- NUEVO SERVICIO ---")
+            print("1. Sala | 2. Alquiler Equipo | 3. Asesoria")
+            tipo = input("Elija el tipo (1, 2 o 3): ")
+            nom = input("Nombre del servicio: ")
+            
+            try:
+                precio = float(input("Precio base: "))
+                if tipo == "1":
+                    cap = int(input("Capacidad de personas: "))
+                    servicios.append(Sala(nom, precio, cap))
+                elif tipo == "2":
+                    cant = int(input("Cantidad de computadores: "))
+                    servicios.append(Equipo(nom, precio, cant))
+                elif tipo == "3":
+                    exp = input("Nombre del experto: ")
+                    servicios.append(Asesoria(nom, precio, exp))
+                else:
+                    print("Esa opcion no existe.")
+                    continue
+                print("Servicio guardado en el sistema.")
+            except Exception as e: 
+                print(f"Fallo: {e}")
+                guardar_error(f"Fallo crear servicio a mano: {e}")
+
+        elif opcion == "4":  # Crear reserva pidiendo datos
+            print("\n--- NUEVA RESERVA ---")
+            if not clientes or not servicios:
+                print("Falta crear clientes y servicios primero en las opciones 2 y 3.")
+                continue
+            
+            print("Clientes:")
+            for i, c in enumerate(clientes): print(f"  {i+1}. {c.ver_datos()}")
+            print("Servicios:")
+            for i, s in enumerate(servicios): print(f"  {i+1}. {s.ver_datos()}")
+
+            try:
+                c_idx = int(input("Numero del cliente: ")) - 1
+                s_idx = int(input("Numero del servicio: ")) - 1
+                tiempo = float(input("Tiempo (horas/dias): "))
+                
+                r = Reserva(num_reserva, clientes[c_idx], servicios[s_idx], tiempo)
+                r.cobrar()
+                reservas.append(r)
+                print(f"Reserva {num_reserva} lista. Total a pagar: ${r.total}")
+                num_reserva += 1
+            except Exception as e: 
+                print(f"Fallo al reservar: {e}")
+                guardar_error(f"Fallo crear reserva a mano: {e}")
+
+        elif opcion == "5":  # Mostrar las listas
+            print("\n--- CLIENTES ---")
+            for c in clientes: print(c.ver_datos())
+            print("\n--- SERVICIOS ---")
+            for s in servicios: print(s.ver_datos())
+            print("\n--- RESERVAS ---")
+            for r in reservas: print(r.ver_datos())
+            if not clientes and not servicios and not reservas:
+                print("Todo esta vacio por ahora.")
+
+        elif opcion == "6":  # Mostrar el archivo log
+            print("\n--- ARCHIVO DE LOGS ---")
+            try:
+                with open("software_fj.log", "r") as f:
+                    print(f.read())
+            except:
+                print("El archivo todavia no existe o esta vacio.")
+
+        elif opcion == "7":  # Salir
+            print("Saliendo del programa...")
+            break
+
+        else:
+            print("Opcion invalida. Intente de nuevo.")
+
+# Para que el programa arranque
+if __name__ == "__main__":
+    menu()
