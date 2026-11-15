@@ -13,23 +13,25 @@ class ErrorDatoMalo(ErrorBase):  # Para cuando escriben algo mal o lo dejan vaci
 class ErrorReserva(ErrorBase):  # Para cuando algo falla cobrando o cancelando
     pass 
 
-# -------------------------------------
+# --------------------------------------
 # 2. ARCHIVO PARA GUARDAR ERRORES (LOGS)
-# -------------------------------------
+# --------------------------------------
 def guardar_error(mensaje):  # Funcion que guarda lo que pasa en un archivo
     try:  # Intenta abrir el archivo para escribir
         archivo = open("software_fj.log", "a", encoding="utf-8")  
         fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Saca la fecha y hora
         archivo.write(f"[{fecha}] {mensaje}\n")  # Guarda la fecha y el mensaje
     except Exception:  # Si no puede abrir el archivo por algo
-        print("Aviso: No se pudo guardar el error.")
+        print("Aviso: No se pudo guardar el error en el archivo.")
     finally:  # Siempre se ejecuta al final para cerrar el archivo
-        try: archivo.close()  
-        except: pass  
+        try: 
+            archivo.close()  # Cierra el archivo
+        except: 
+            pass  # Si no estaba abierto, no hace nada
 
-# -------------------------
-# 3. CLASES PADRE Y CLIENTE
-# -------------------------
+# -----------------------
+# 3. CLASES PADRE E HIJAS
+# -----------------------
 class Entidad(ABC):  # Clase abstracta principal
     @abstractmethod  # Obliga a las hijas a tener esta funcion
     def ver_datos(self):  
@@ -48,23 +50,15 @@ class Cliente(Entidad):  # Clase para crear clientes
     def ver_datos(self):  # Muestra los datos del cliente
         return f"Cliente: {self.__nombre} | Correo: {self.__correo} | Tel: {self.__telefono}"
 
-# --- Prueba que hice para probar que funciona esta parte --- (borrar esta parte o bloque de la prueba o sino no corre, porque es como comprobe que funciona el codigo)
-if __name__ == "__main__":
-    print("Probando la parte 1...")
-    cliente1 = Cliente("Freddy", "freddy@hotmail.com", "3001234567")
-    print(cliente1.ver_datos())
-
-# segundo aporte para del codigo
-
 class Servicio(Entidad):  # Clase abstracta para los servicios
     def __init__(self, nombre, precio_base):
-        if precio_base <= 0:  # El precio no puede ser cero o negativo
+        if precio_base <= 0:  # El precio no puede ser negativo o cero
             raise ErrorDatoMalo("El precio del servicio debe ser mayor a cero.")
         self.nombre = nombre
         self.precio_base = precio_base
 
     @abstractmethod  # Obliga a las hijas a calcular el costo a su manera
-    def calcular_total(self, cantidad, descuento=0.0):  # Con parametro opcional
+    def calcular_total(self, cantidad, descuento=0.0):  # Con parametro de descuento opcional
         pass
         
     def ver_datos(self):  # Muestra los datos del servicio
@@ -80,29 +74,31 @@ class Sala(Servicio):  # Servicio 1: Prestar salas
     def calcular_total(self, horas, descuento=0.0):  # Calcula el cobro por horas
         if horas <= 0: 
             raise ErrorDatoMalo("Las horas de la sala no pueden ser negativas o cero.")
-        return (self.precio_base * horas) - (self.precio_base * horas * descuento)  
+        total = (self.precio_base * horas) - (self.precio_base * horas * descuento)  
+        return total
 
     def ver_datos(self):  # Muestra datos de la sala
-        return f"Sala: {self.nombre} para {self.capacidad} personas | ${self.precio_base}/h"
+        return f"Sala: {self.nombre} para {self.capacidad} personas | ${self.precio_base} por hora"
 
-class Equipo(Servicio):  # Servicio 2: Prestar equipos 
+class Equipo(Servicio):  # Servicio 2: Prestar equipos (CORREGIDO EL NOMBRE AQUI)
     def __init__(self, nombre, precio_base, computadores):
-        super().__init__(nombre, precio_base)  
+        super().__init__(nombre, precio_base)  # Le pasa datos al padre
         if computadores <= 0:
             raise ErrorDatoMalo("Debe alquilar por lo menos 1 computador.")
         self.computadores = computadores
 
-    def calcular_total(self, dias, descuento=0.0):  # Calcula cobro por dias
+    def calcular_total(self, dias, descuento=0.0):  # Calcula cobro por dias y cantidad
         if dias <= 0: 
-            raise ErrorDatoMalo("Los dias de alquiler deben ser mayores a cero.")
-        return (self.precio_base * self.computadores * dias) - (self.precio_base * self.computadores * dias * descuento)
+            raise ErrorDatoMalo("Los dias de alquiler no pueden ser cero o negativos.")
+        total = (self.precio_base * self.computadores * dias) - (self.precio_base * self.computadores * dias * descuento)
+        return total
 
     def ver_datos(self):  # Muestra datos del equipo
-        return f"Alquiler: {self.computadores} {self.nombre} | ${self.precio_base}/dia c/u"
+        return f"Alquiler: {self.computadores} {self.nombre} | ${self.precio_base} por dia c/u"
 
 class Asesoria(Servicio):  # Servicio 3: Dar asesorias
     def __init__(self, nombre, precio_base, experto):
-        super().__init__(nombre, precio_base)  
+        super().__init__(nombre, precio_base)  # Pasa datos al padre
         if not experto:
             raise ErrorDatoMalo("La asesoria debe tener un experto asignado.")
         self.experto = experto
@@ -110,19 +106,13 @@ class Asesoria(Servicio):  # Servicio 3: Dar asesorias
     def calcular_total(self, horas, descuento=0.0):  # Calcula cobro por horas
         if horas <= 0: 
             raise ErrorDatoMalo("Las horas de asesoria no pueden ser cero.")
-        return (self.precio_base * horas) - (self.precio_base * horas * descuento)
+        total = (self.precio_base * horas) - (self.precio_base * horas * descuento)
+        return total
 
     def ver_datos(self):  # Muestra datos de asesoria
-        return f"Asesoria: {self.nombre} con {self.experto} | ${self.precio_base}/h"
+        return f"Asesoria: {self.nombre} con {self.experto} | ${self.precio_base} por hora"
 
-# --- Prueba rapida para ver que funciona esta parte --- (tutor y compañeros no olviden borrar estas partes de prueba o sino no funcionara el programa)
-if __name__ == "__main__":
-    print("Probando la parte 2...")
-    s1 = Sala("Sala Grande", 40000, 10)
-    print(s1.ver_datos())
-
-# tercer aporte para del codigo
-
+# ==========================================
 # 4. RESERVAS Y EXCEPCIONES
 # ==========================================
 class Reserva(Entidad):  # Maneja los cobros y estados
@@ -155,79 +145,8 @@ class Reserva(Entidad):  # Maneja los cobros y estados
     def ver_datos(self):  # Muestra resumen de la reserva
         return f"Reserva {self.numero} ({self.estado}) | Para: {self.cliente._Cliente__nombre} | Total: ${self.total}"
 
-# --- Prueba rapida para ver que funciona esta parte ---
-if __name__ == "__main__":
-    c = Cliente("Juan", "juan@correo.com", "3000000")
-    s = Equipo("PCs", 20000, 2)
-    r = Reserva(1, c, s, 3)
-    r.cobrar()
-    print(r.ver_datos())
-
-# 5. PRUEBA DE LAS 10 OPERACIONES REQUERIDAS
 # ==========================================
-def simulacion():
-    print("\n--- INICIANDO 10 PRUEBAS AUTOMATICAS ---")
-    
-    # 1. Cliente bueno
-    try: 
-        c1 = Cliente("Carlos Mario", "carlos@correo.com", "3001234567")
-        print("1. Cliente creado super bien")
-    except ErrorEmpresa as e: guardar_error(e)
-
-    # 2. Cliente malo a proposito
-    try: 
-        Cliente("Andrea", "correo_sin_arroba", "letras")  
-    except ErrorDatoMalo as e: 
-        print(f"2. Error atrapado bien (Cliente malo): {e}")
-        guardar_error(e)
-
-    # 3. Servicio bueno
-    s1 = Sala("Sala de Juntas", 40000, 15)
-    print("3. Sala creada super bien")
-
-    # 4. Servicio malo a proposito
-    try:
-        Equipo("Portatil malo", 0, 0)
-    except ErrorDatoMalo as e:
-        print(f"4. Error atrapado bien (Equipo malo): {e}")
-        guardar_error(e)
-
-    s2 = Asesoria("Ayuda con Python", 60000, "Profe Fabian")
-    print("5. Asesoria creada super bien")
-
-    # 6. Reserva buena
-    try: 
-        r1 = Reserva(100, c1, s1, 3)  
-        r1.cobrar(descuento=0.1)  # Con 10% de descuento
-        print(f"6. Reserva 100 cobrada bien con descuento. Pago: ${r1.total}")
-    except ErrorEmpresa as e: guardar_error(e)
-
-    # 7. Reserva mala a proposito (tiempo negativo)
-    try: 
-        r2 = Reserva(101, c1, s2, -5)  
-        r2.cobrar()
-    except ErrorReserva as e: 
-        print(f"7. Error encadenado atrapado bien: {e}")
-
-    # 8. Cancelar reserva bien
-    try: 
-        r1.cancelar()
-        print("8. Reserva 100 cancelada bien")
-    except ErrorEmpresa as e: guardar_error(e)
-
-    # 9. Tratar de cancelar una reserva ya cancelada
-    try: 
-        r1.cancelar()
-    except ErrorReserva as e: 
-        print(f"9. Error atrapado al re-cancelar: {e}")
-
-    print("10. Simulacion terminada, el programa aguanto todos los errores.")
-
-# --- Prueba rapida ---
-if __name__ == "__main__":
-    simulacion()
-
-# 6. MENU PRINCIPAL
+# 5. MENU PRINCIPAL
 # ==========================================
 def menu():
     # Listas donde vamos a guardar la informacion en memoria
@@ -250,8 +169,63 @@ def menu():
         
         opcion = input("Opcion: ")
 
-        if opcion == "1":
-            simulacion()  # Llama a la funcion de la parte 4
+        if opcion == "1":  # Ejecuta todo en automatico con datos inventados
+            print("\n--- INICIANDO 10 PRUEBAS AUTOMATICAS ---")
+            
+            # 1. Cliente bueno
+            try: 
+                c1 = Cliente("Carlos Mario", "carlos@correo.com", "3001234567")
+                print("1. Cliente creado super bien")
+            except ErrorEmpresa as e: guardar_error(e)
+
+            # 2. Cliente malo a proposito
+            try: 
+                Cliente("Andrea", "correo_sin_arroba", "letras")  
+            except ErrorDatoMalo as e: 
+                print(f"2. Error atrapado bien (Cliente malo): {e}")
+                guardar_error(e)
+
+            # 3. Servicio bueno
+            s1 = Sala("Sala de Juntas", 40000, 15)
+            print("3. Sala creada super bien")
+
+            # 4. Servicio malo a proposito
+            try:
+                Equipo("Portatil malo", 0, 0)
+            except ErrorDatoMalo as e:
+                print(f"4. Error atrapado bien (Equipo malo): {e}")
+                guardar_error(e)
+
+            s2 = Asesoria("Ayuda con Python", 60000, "Profe Fabian")
+            print("5. Asesoria creada super bien")
+
+            # 6. Reserva buena
+            try: 
+                r1 = Reserva(100, c1, s1, 3)  # 3 horas de sala
+                r1.cobrar(descuento=0.1)  # Con 10% de descuento
+                print(f"6. Reserva 100 cobrada bien con descuento. Pago: ${r1.total}")
+            except ErrorEmpresa as e: guardar_error(e)
+
+            # 7. Reserva mala a proposito (tiempo negativo)
+            try: 
+                r2 = Reserva(101, c1, s2, -5)  # -5 horas
+                r2.cobrar()
+            except ErrorReserva as e: 
+                print(f"7. Error encadenado atrapado bien: {e}")
+
+            # 8. Cancelar reserva bien
+            try: 
+                r1.cancelar()
+                print("8. Reserva 100 cancelada bien")
+            except ErrorEmpresa as e: guardar_error(e)
+
+            # 9. Tratar de cancelar una reserva ya cancelada
+            try: 
+                r1.cancelar()
+            except ErrorReserva as e: 
+                print(f"9. Error atrapado al re-cancelar: {e}")
+
+            print("10. Simulacion terminada, el programa aguanto todos los errores.")
 
         elif opcion == "2":  # Crear cliente pidiendo datos
             print("\n--- NUEVO CLIENTE ---")
