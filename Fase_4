@@ -176,7 +176,7 @@ def menu():
             try: 
                 c1 = Cliente("Carlos Mario", "carlos@correo.com", "3001234567")
                 print("1. Cliente creado super bien")
-            except ErrorEmpresa as e: guardar_error(e)
+            except ErrorBase as e: guardar_error(e)
 
             # 2. Cliente malo a proposito
             try: 
@@ -204,7 +204,7 @@ def menu():
                 r1 = Reserva(100, c1, s1, 3)  # 3 horas de sala
                 r1.cobrar(descuento=0.1)  # Con 10% de descuento
                 print(f"6. Reserva 100 cobrada bien con descuento. Pago: ${r1.total}")
-            except ErrorEmpresa as e: guardar_error(e)
+            except ErrorBase as e: guardar_error(e)
 
             # 7. Reserva mala a proposito (tiempo negativo)
             try: 
@@ -217,7 +217,7 @@ def menu():
             try: 
                 r1.cancelar()
                 print("8. Reserva 100 cancelada bien")
-            except ErrorEmpresa as e: guardar_error(e)
+            except ErrorBase as e: guardar_error(e)
 
             # 9. Tratar de cancelar una reserva ya cancelada
             try: 
@@ -225,7 +225,14 @@ def menu():
             except ErrorReserva as e: 
                 print(f"9. Error atrapado al re-cancelar: {e}")
 
-            print("10. Simulacion terminada, el programa aguanto todos los errores.")
+            # 10. Reserva buena de asesoria
+            try:
+                r3 = Reserva(102, c1, s2, 2)  # 2 horas de asesoria
+                r3.cobrar()
+                print(f"10. Reserva 102 cobrada bien. Pago: ${r3.total}")
+            except ErrorBase as e: guardar_error(e)
+
+            print("Simulacion terminada, el programa aguanto todos los errores.")
 
         elif opcion == "2":  # Crear cliente pidiendo datos
             print("\n--- NUEVO CLIENTE ---")
